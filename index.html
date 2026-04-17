@@ -18,13 +18,31 @@
     .card {
       background: #fff;
       border-radius: 15px;
-      padding: 20px;
-      box-shadow: 0 10px 30px rgba(0,0,0,.1);
+      padding: 24px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
     }
-    iframe {
+    .subtitle {
+      font-style: italic;
+      color: #8d6e63;
+      margin-bottom: 20px;
+      font-size: 0.95rem;
+    }
+    input, button {
       width: 100%;
-      min-height: 700px;
+      margin-top: 12px;
+      padding: 12px;
+      border-radius: 10px;
+      font-family: 'Georgia', serif;
+    }
+    input {
+      border: 1px solid #e0d4c6;
+      background: #faf8f6;
+    }
+    button {
+      background: #d4a373;
+      color: white;
       border: none;
+      font-size: 1.05rem;
     }
   </style>
 </head>
@@ -33,16 +51,58 @@
   <div class="container">
     <div class="card">
       <h1>Dorothy & Kenneth</h1>
-      <p style="font-style:italic;color:#8d6e63;">
+      <div class="subtitle">
         Share your <strong>10 favourite</strong> photos &amp; videos from today ✨
-      </p>
+      </div>
 
-      <!-- EMBEDDED FORM -->
-      <iframe
-        src="https://docs.google.com/forms/d/e/1FAIpQLSdI-zxAqjR2TS1iBXWqbnesCY735X0dWw5kATw-Wntl-cDF7g/viewform?embedded=true&entry.63059513=Table+6"
-      ></iframe>
+      <!-- REAL SUBMISSION -->
+      <form
+        method="POST"
+        action="https://docs.google.com/forms/d/e/1FAIpQLSdI-zxAqjR2TS1iBXWqbnesCY735X0dWw5kATw-Wntl-cDF7g/formResponse"
+        enctype="multipart/form-data"
+      >
+        <input
+          type="file"
+          name="entry.728087775"
+          accept="image/*,video/*"
+          multiple
+          required
+        />
 
+        <input
+          type="text"
+          name="entry.185980027"
+          placeholder="Leave a message for us (optional)"
+        />
+
+        <input
+          type="hidden"
+          name="entry.989863965"
+          value=""
+          id="uploadId"
+        />
+
+        <input
+          type="hidden"
+          name="entry.63059513"
+          value=""
+          id="tableField"
+        />
+
+        <button type="submit">📸 Upload Memories</button>
+      </form>
     </div>
   </div>
+
+  <script>
+    document.getElementById("uploadId").value =
+      Date.now() + "-" + Math.random().toString(36).slice(2);
+
+    const params = new URLSearchParams(window.location.search);
+    const table = params.get("table");
+    if (table) {
+      document.getElementById("tableField").value = "Table " + table;
+    }
+  </script>
 </body>
 </html>
