@@ -70,10 +70,15 @@
       transition: transform 0.15s ease;
       margin-top: 12px;
       font-family: 'Georgia', serif;
+      width: 100%;
     }
 
     button:active {
       transform: scale(0.96);
+    }
+
+    button:disabled {
+      background: #ccc;
     }
 
     #doneMsg {
@@ -95,17 +100,14 @@
     <div class="card">
       <h1>Dorothy & Kenneth</h1>
       <div class="subtitle">
-        Share your 10 favourite photos & videos from today ✨
+        Share your photos & videos from today ✨
       </div>
 
-      ✅ FORM STARTS HERE
-      <form
-        id="uploadForm"
-        method="POST"
-        action="https://docs.google.com/forms/d/e/1FAIpQLSdI-zxAqjR2TS1iBXWqbnesCY735X0dWw5kATw-Wntl-cDF7g/formResponse"
-        enctype="multipart/form-data"
-        target="_self"
-      >
+      <!-- ✅ Hidden iframe prevents redirect -->
+      <iframe name="hidden_iframe" style="display:none;"></iframe>
+
+      https://docs.google.com/forms/d/e/1FAIpQLSdI-zxAqjR2TS1iBXWqbnesCY735X0dWw5kATw-Wntl-cDF7g/formResponse
+        <!-- File upload -->
         <input
           type="file"
           name="entry.728087775"
@@ -114,23 +116,31 @@
           required
         />
 
+        <!-- Message -->
         <input
           type="text"
           name="entry.185980027"
           placeholder="Leave a message for us (optional)"
         />
 
+        <!-- Upload ID -->
         <input
           type="hidden"
           name="entry.989863965"
           id="uploadId"
         />
 
-        <button type="submit">
+        <!-- Table auto-tag -->
+        <input
+          type="hidden"
+          name="entry.63059513"
+          id="tableField"
+        />
+
+        <button type="submit" id="submitBtn">
           📸 Upload Memories
         </button>
       </form>
-      ✅ FORM ENDS HERE
 
       <p id="doneMsg" style="display:none;">
         ✅ Thank you for sharing!
@@ -143,18 +153,39 @@
   </div>
 
   <script>
+    /* ---------- Unique Upload ID ---------- */
     const uploadId =
       Date.now().toString() + "-" +
       Math.random().toString(36).slice(2);
     document.getElementById("uploadId").value = uploadId;
 
-    if (localStorage.getItem("alreadyUploaded")) {
-      document.getElementById("uploadForm").style.display = "none";
-      document.getElementById("doneMsg").style.display = "block";
+    /* ---------- Table Auto-Tagging ---------- */
+    const params = new URLSearchParams(window.location.search);
+    const table = params.get("table");
+    if (table) {
+      document.getElementById("tableField").value = `Table ${table}`;
     }
 
-    document.getElementById("uploadForm").addEventListener("submit", () => {
+    /* ---------- Upload Lock + UX ---------- */
+    const form = document.getElementById("uploadForm");
+    const button = document.getElementById("submitBtn");
+    const doneMsg = document.getElementById("doneMsg");
+
+    if (localStorage.getItem("alreadyUploaded")) {
+      form.style.display = "none";
+      doneMsg.style.display = "block";
+    }
+
+    form.addEventListener("submit", () => {
+      button.disabled = true;
+      button.textContent = "Uploading… Please wait";
       localStorage.setItem("alreadyUploaded", "yes");
+
+      // Show thank-you message shortly after submit
+      setTimeout(() => {
+        form.style.display = "none";
+        doneMsg.style.display = "block";
+      }, 1000);
     });
   </script>
 </body>
