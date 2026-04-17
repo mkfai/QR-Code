@@ -28,8 +28,7 @@
     }
 
     h1 {
-      margin-top: 0;
-      margin-bottom: 6px;
+      margin: 0 0 6px;
       font-size: 1.4rem;
       font-weight: normal;
     }
@@ -49,8 +48,8 @@
       border-radius: 10px;
       border: 1px solid #e0d4c6;
       background: #faf8f6;
-      font-size: 0.95rem;
       font-family: 'Georgia', serif;
+      font-size: 0.95rem;
       color: #5d4037;
       box-sizing: border-box;
     }
@@ -60,6 +59,7 @@
     }
 
     button {
+      width: 100%;
       background: #d4a373;
       color: white;
       border: none;
@@ -67,14 +67,8 @@
       font-size: 1.05rem;
       border-radius: 50px;
       cursor: pointer;
-      transition: transform 0.15s ease;
       margin-top: 12px;
       font-family: 'Georgia', serif;
-      width: 100%;
-    }
-
-    button:active {
-      transform: scale(0.96);
     }
 
     button:disabled {
@@ -88,7 +82,7 @@
     }
 
     .footer-note {
-      margin-top: 15px;
+      margin-top: 12px;
       font-size: 0.8rem;
       color: #8d6e63;
     }
@@ -99,15 +93,18 @@
   <div class="container">
     <div class="card">
       <h1>Dorothy & Kenneth</h1>
-      <div class="subtitle">
-        Share your photos & videos from today ✨
-      </div>
+      <div class="subtitle">Share your photos & videos from today ✨</div>
 
-      <!-- ✅ Hidden iframe prevents redirect -->
+      <!-- Hidden iframe to stop redirect -->
       <iframe name="hidden_iframe" style="display:none;"></iframe>
 
-      https://docs.google.com/forms/d/e/1FAIpQLSdI-zxAqjR2TS1iBXWqbnesCY735X0dWw5kATw-Wntl-cDF7g/formResponse
-        <!-- File upload -->
+      <form
+        method="POST"
+        action="https://docs.google.com/forms/d/e/1FAIpQLSdI-zxAqjR2TS1iBXWqbnesCY735X0dWw5kATw-Wntl-cDF7g/formResponse"
+        target="hidden_iframe"
+        enctype="multipart/form-data"
+        id="uploadForm"
+      >
         <input
           type="file"
           name="entry.728087775"
@@ -116,7 +113,6 @@
           required
         />
 
-        <!-- Message -->
         <input
           type="text"
           name="entry.185980027"
@@ -133,7 +129,7 @@
         <!-- Table auto-tag -->
         <input
           type="hidden"
-          name="entry.63059513"
+          name="entry.TABLE_ID"
           id="tableField"
         />
 
@@ -153,20 +149,20 @@
   </div>
 
   <script>
-    /* ---------- Unique Upload ID ---------- */
+    /* Upload ID */
     const uploadId =
       Date.now().toString() + "-" +
       Math.random().toString(36).slice(2);
     document.getElementById("uploadId").value = uploadId;
 
-    /* ---------- Table Auto-Tagging ---------- */
+    /* Table auto-tag */
     const params = new URLSearchParams(window.location.search);
     const table = params.get("table");
     if (table) {
       document.getElementById("tableField").value = `Table ${table}`;
     }
 
-    /* ---------- Upload Lock + UX ---------- */
+    /* Upload lock + UX */
     const form = document.getElementById("uploadForm");
     const button = document.getElementById("submitBtn");
     const doneMsg = document.getElementById("doneMsg");
@@ -181,7 +177,6 @@
       button.textContent = "Uploading… Please wait";
       localStorage.setItem("alreadyUploaded", "yes");
 
-      // Show thank-you message shortly after submit
       setTimeout(() => {
         form.style.display = "none";
         doneMsg.style.display = "block";
