@@ -6,7 +6,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <style>
-    /* Match Photo Booth typography & tone */
     body {
       font-family: 'Georgia', serif;
       background: #fdf6f0;
@@ -30,7 +29,7 @@
 
     h1 {
       margin-top: 0;
-      margin-bottom: 4px;
+      margin-bottom: 6px;
       font-size: 1.4rem;
       font-weight: normal;
     }
@@ -39,3 +38,124 @@
       font-size: 0.95rem;
       color: #8d6e63;
       margin-bottom: 20px;
+      font-style: italic;
+    }
+
+    input[type="file"],
+    input[type="text"] {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border-radius: 10px;
+      border: 1px solid #e0d4c6;
+      background: #faf8f6;
+      font-size: 0.95rem;
+      font-family: 'Georgia', serif;
+      color: #5d4037;
+      box-sizing: border-box;
+    }
+
+    input::placeholder {
+      color: #9c887c;
+    }
+
+    button {
+      background: #d4a373;
+      color: white;
+      border: none;
+      padding: 14px 20px;
+      font-size: 1.05rem;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: transform 0.15s ease;
+      margin-top: 12px;
+      font-family: 'Georgia', serif;
+    }
+
+    button:active {
+      transform: scale(0.96);
+    }
+
+    #doneMsg {
+      margin-top: 20px;
+      font-size: 1rem;
+      color: #6b8e23;
+    }
+
+    .footer-note {
+      margin-top: 15px;
+      font-size: 0.8rem;
+      color: #8d6e63;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="card">
+      <h1>Dorothy & Kenneth</h1>
+      <div class="subtitle">
+        Share your photos & videos from today ✨
+      </div>
+
+      ✅ FORM STARTS HERE
+      <form
+        id="uploadForm"
+        method="POST"
+        action="https://docs.google.com/forms/d/e/1FAIpQLSdI-zxAqjR2TS1iBXWqbnesCY735X0dWw5kATw-Wntl-cDF7g/formResponse"
+        enctype="multipart/form-data"
+        target="_self"
+      >
+        <input
+          type="file"
+          name="entry.728087775"
+          accept="image/*,video/*"
+          multiple
+          required
+        />
+
+        <input
+          type="text"
+          name="entry.185980027"
+          placeholder="Leave a message for us (optional)"
+        />
+
+        <input
+          type="hidden"
+          name="entry.989863965"
+          id="uploadId"
+        />
+
+        <button type="submit">
+          📸 Upload Memories
+        </button>
+      </form>
+      ✅ FORM ENDS HERE
+
+      <p id="doneMsg" style="display:none;">
+        ✅ Thank you for sharing!
+      </p>
+
+      <div class="footer-note">
+        Photos will be saved to our wedding album 💛
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const uploadId =
+      Date.now().toString() + "-" +
+      Math.random().toString(36).slice(2);
+    document.getElementById("uploadId").value = uploadId;
+
+    if (localStorage.getItem("alreadyUploaded")) {
+      document.getElementById("uploadForm").style.display = "none";
+      document.getElementById("doneMsg").style.display = "block";
+    }
+
+    document.getElementById("uploadForm").addEventListener("submit", () => {
+      localStorage.setItem("alreadyUploaded", "yes");
+    });
+  </script>
+</body>
+</html>
