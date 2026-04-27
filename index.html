@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>婚禮回憶上傳</title>
+    <title>Dorothy & Kenneth — Share Your Memories</title>
     <style>
-        body { font-family: -apple-system, sans-serif; background: #fff5f5; text-align: center; color: #444; }
+        body { font-family: -apple-system, sans-serif; background: #fdf6f0; text-align: center; color: #5d4037; }
         .container { max-width: 400px; margin: 50px auto; padding: 20px; background: white; border-radius: 15px; box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
         h1 { color: #d63384; font-size: 1.5rem; }
         .upload-area { border: 2px dashed #ffb6c1; padding: 20px; border-radius: 10px; margin: 20px 0; }
@@ -17,12 +17,12 @@
 <body>
 
 <div class="container">
-    <h1>分享我們的幸福 💖</h1>
-    <p>歡迎上傳 10 張最喜歡的照片/影片</p>
+    <h1>Share your joy 💖</h1>
+    <p>Please upload your favourite photos up to 10</p>
     
     <div class="upload-area">
         <input type="file" id="fileInput" accept="image/*,video/*" multiple style="display: none;">
-        <button id="btn-select">選擇並上傳</button>
+        <button id="btn-select">Select and upload</button>
     </div>
 
     <div id="status-list"></div>
@@ -39,17 +39,17 @@
     fileInput.onchange = async () => {
         const files = Array.from(fileInput.files);
         if (files.length > 10) {
-            alert("抱歉，一次最多只能上傳 10 張喔！");
+            alert("Sorry，limited to 10 files！");
             return;
         }
 
         btnSelect.disabled = true;
-        btnSelect.innerText = "上傳中...";
+        btnSelect.innerText = "Uploading...";
 
         for (const file of files) {
             const div = document.createElement('div');
             div.className = 'loading';
-            div.innerText = `⏳ 正在上傳: ${file.name}...`;
+            div.innerText = `⏳ Uploading: ${file.name}...`;
             statusList.appendChild(div);
 
             try {
@@ -64,17 +64,17 @@
                 });
                 const result = await response.json();
                 if (result.result === "success") {
-                    div.innerText = `✅ 上傳成功: ${file.name}`;
+                    div.innerText = `✅ Upload successful: ${file.name}`;
                     div.style.color = "green";
                 }
             } catch (err) {
-                div.innerText = `❌ 上傳失敗: ${file.name}`;
+                div.innerText = `❌ Upload failed: ${file.name}`;
                 div.style.color = "red";
             }
         }
 
         btnSelect.disabled = false;
-        btnSelect.innerText = "繼續上傳";
+        btnSelect.innerText = "Continue upload";
     };
 
     // 將檔案轉為 Base64 格式
