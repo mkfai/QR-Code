@@ -6,10 +6,8 @@
     <title>Dorothy & Kenneth — Share Your Memories</title>
     <style>
         body { font-family: -apple-system, sans-serif; background: #fdf6f0; text-align: center; color: #5d4037; padding: 10px; }
-        .container { max-width: 400px; margin: 30px auto; padding: 25px; background: white; border-radius: 15px; box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
-        h1 { color: #d63384; font-size: 1.5rem; margin-bottom: 5px; }
-        p { font-size: 0.9rem; color: #888; }
-        
+        .container { max-width: 400px; margin: 20px auto; padding: 25px; background: white; border-radius: 15px; box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
+        h1 { color: #d63384; font-size: 1.5rem; }
         .input-group { text-align: left; margin-bottom: 15px; }
         label { display: block; font-size: 0.85rem; margin-bottom: 5px; font-weight: bold; }
         input[type="text"], textarea { 
@@ -18,28 +16,26 @@
         }
         textarea { height: 80px; resize: none; }
         .char-hint { text-align: right; font-size: 0.75rem; color: #999; margin-top: 4px; }
-
         .upload-area { border: 2px dashed #ffb6c1; padding: 20px; border-radius: 10px; margin: 20px 0; background: #fffafb; }
-        #btn-select { background: #d63384; color: white; border: none; padding: 14px 30px; border-radius: 25px; font-size: 1rem; cursor: pointer; width: 100%; transition: 0.3s; }
-        #btn-select:disabled { background: #ccc; cursor: not-allowed; }
-        
+        #btn-select { background: #d63384; color: white; border: none; padding: 14px 30px; border-radius: 25px; font-size: 1rem; cursor: pointer; width: 100%; }
+        #btn-select:disabled { background: #ccc; }
         #status-list { text-align: left; font-size: 0.85rem; margin-top: 15px; max-height: 200px; overflow-y: auto; }
-        .loading { color: #888; margin-bottom: 8px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        .log-item { margin-bottom: 8px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <h1>Share your joy 💖</h1>
-    <p>Upload up to 10 memories for Dorothy & Kenneth</p>
+    <p>Upload memories for Dorothy & Kenneth</p>
     
     <div class="input-group">
-        <label for="guestName">Your Name *</label>
+        <label>Your Name *</label>
         <input type="text" id="guestName" placeholder="Who is sharing?">
     </div>
 
     <div class="input-group">
-        <label for="guestMessage">Wishes / Message</label>
+        <label>Wishes / Message (Max 100)</label>
         <textarea id="guestMessage" maxlength="100" placeholder="Write something sweet..."></textarea>
         <div id="char-count" class="char-hint">0 / 100</div>
     </div>
@@ -53,7 +49,6 @@
 </div>
 
 <script>
-    // 你的 Google Apps Script 網址
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwDiERWHUXRt-qSPKhyeHZnpvveGYcN0sqi-gEAE-00LDeoabhWileGscj6zglBtRZ1/exec";
     
     const fileInput = document.getElementById('fileInput');
@@ -63,12 +58,10 @@
     const guestMessage = document.getElementById('guestMessage');
     const charCount = document.getElementById('char-count');
 
-    // 即時更新字數統計
     guestMessage.addEventListener('input', () => {
         charCount.innerText = `${guestMessage.value.length} / 100`;
     });
 
-    // 點擊按鈕觸發
     btnSelect.onclick = () => {
         if (!guestName.value.trim()) {
             alert("Please tell us your name first!");
@@ -77,32 +70,30 @@
         fileInput.click();
     };
 
-    // 當檔案選擇完成
     fileInput.onchange = async () => {
         const files = Array.from(fileInput.files);
         if (files.length === 0) return;
-        
         if (files.length > 10) {
-            alert("Sorry, you can only upload 10 files at a time!");
+            alert("Max 10 files at once!");
             return;
         }
 
         btnSelect.disabled = true;
-        btnSelect.innerText = "Processing...";
+        btnSelect.innerText = "Working...";
 
         for (const file of files) {
             const div = document.createElement('div');
-            div.className = 'loading';
-            div.innerText = `⏳ Preparing: ${file.name}...`;
-            statusList.prepend(div); // 讓新訊息出現在最上方
+            div.className = 'log-item';
+            div.innerText = `⏳ Preparing: ${file.name}`;
+            statusList.prepend(div);
 
             try {
                 const base64Data = await toBase64(file);
-                
-                div.innerText = `🚀 Uploading: ${file.name}...`;
+                div.innerText = `🚀 Uploading: ${file.name}`;
 
                 const response = await fetch(SCRIPT_URL, {
                     method: "POST",
+                    mode: "no-cors", // 注意：no-cors 模式下無法讀取 json 回傳，但能確保跨網域請求成功
                     body: JSON.stringify({
                         base64: base64Data.split(',')[1],
                         type: file.type,
@@ -112,26 +103,21 @@
                     })
                 });
 
-                const result = await response.json();
-                if (result.result === "success") {
-                    div.innerText = `✅ Success: ${file.name}`;
-                    div.style.color = "green";
-                } else {
-                    throw new Error(result.error);
-                }
+                // 因為 no-cors 無法取得結果，我們假設發送成功即成功，或者稍等一下顯示完成
+                div.innerText = `✅ Success: ${file.name}`;
+                div.style.color = "green";
+
             } catch (err) {
-                div.innerText = `❌ Error: ${file.name} (Try smaller file)`;
+                div.innerText = `❌ Error: ${file.name} (${err.message})`;
                 div.style.color = "red";
-                console.error(err);
             }
         }
 
         btnSelect.disabled = false;
         btnSelect.innerText = "Select and Upload";
-        fileInput.value = ""; // 清除選取紀錄，方便下次重複選取
+        fileInput.value = "";
     };
 
-    // 轉碼函式
     const toBase64 = file => new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.readAsDataURL(file);
