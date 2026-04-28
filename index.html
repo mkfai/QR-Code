@@ -13,34 +13,35 @@
         .input-group { text-align: left; margin-bottom: 15px; }
         label { display: block; font-size: 0.85rem; margin-bottom: 5px; font-weight: bold; }
         input[type="text"], textarea { 
-            width: 100%; padding: 10px; border: 1px solid #ffb6c1; border-radius: 8px; 
+            width: 100%; padding: 12px; border: 1px solid #ffb6c1; border-radius: 8px; 
             box-sizing: border-box; font-size: 1rem; outline: none;
         }
         textarea { height: 80px; resize: none; }
+        .char-hint { text-align: right; font-size: 0.75rem; color: #999; margin-top: 4px; }
 
         .upload-area { border: 2px dashed #ffb6c1; padding: 20px; border-radius: 10px; margin: 20px 0; background: #fffafb; }
-        #btn-select { background: #d63384; color: white; border: none; padding: 12px 30px; border-radius: 25px; font-size: 1rem; cursor: pointer; width: 100%; }
-        #btn-select:disabled { background: #ccc; }
+        #btn-select { background: #d63384; color: white; border: none; padding: 14px 30px; border-radius: 25px; font-size: 1rem; cursor: pointer; width: 100%; transition: 0.3s; }
+        #btn-select:disabled { background: #ccc; cursor: not-allowed; }
         
-        #status-list { text-align: left; font-size: 0.85rem; margin-top: 15px; max-height: 150px; overflow-y: auto; }
-        .loading { color: #888; margin-bottom: 5px; border-bottom: 1px solid #eee; padding-bottom: 3px; }
+        #status-list { text-align: left; font-size: 0.85rem; margin-top: 15px; max-height: 200px; overflow-y: auto; }
+        .loading { color: #888; margin-bottom: 8px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <h1>Share your joy 💖</h1>
-    <p>Upload up to 10 files and leave us a note!</p>
+    <p>Upload up to 10 memories for Dorothy & Kenneth</p>
     
     <div class="input-group">
-        <label for="guestName">Your Name</label>
-        <input type="text" id="guestName" placeholder="Who are you?">
+        <label for="guestName">Your Name *</label>
+        <input type="text" id="guestName" placeholder="Who is sharing?">
     </div>
 
     <div class="input-group">
-        <label for="guestMessage">Wishes / Message (Max 100 characters)</label>
-        <textarea id="guestMessage" maxlength="100" placeholder="Leave a message for us..."></textarea>
-        <div id="char-count" style="text-align: right; font-size: 0.75rem; color: #888;">0 / 100</div>
+        <label for="guestMessage">Wishes / Message</label>
+        <textarea id="guestMessage" maxlength="100" placeholder="Write something sweet..."></textarea>
+        <div id="char-count" class="char-hint">0 / 100</div>
     </div>
 
     <div class="upload-area">
@@ -52,13 +53,22 @@
 </div>
 
 <script>
+    // 你的 Google Apps Script 網址
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwDiERWHUXRt-qSPKhyeHZnpvveGYcN0sqi-gEAE-00LDeoabhWileGscj6zglBtRZ1/exec";
+    
     const fileInput = document.getElementById('fileInput');
     const btnSelect = document.getElementById('btn-select');
     const statusList = document.getElementById('status-list');
     const guestName = document.getElementById('guestName');
     const guestMessage = document.getElementById('guestMessage');
+    const charCount = document.getElementById('char-count');
 
+    // 即時更新字數統計
+    guestMessage.addEventListener('input', () => {
+        charCount.innerText = `${guestMessage.value.length} / 100`;
+    });
+
+    // 點擊按鈕觸發
     btnSelect.onclick = () => {
         if (!guestName.value.trim()) {
             alert("Please tell us your name first!");
@@ -67,50 +77,61 @@
         fileInput.click();
     };
 
+    // 當檔案選擇完成
     fileInput.onchange = async () => {
         const files = Array.from(fileInput.files);
+        if (files.length === 0) return;
+        
         if (files.length > 10) {
-            alert("Sorry, limited to 10 files!");
+            alert("Sorry, you can only upload 10 files at a time!");
             return;
         }
 
         btnSelect.disabled = true;
-        btnSelect.innerText = "Uploading...";
+        btnSelect.innerText = "Processing...";
 
         for (const file of files) {
             const div = document.createElement('div');
             div.className = 'loading';
-            div.innerText = `⏳ Uploading: ${file.name}...`;
-            statusList.prepend(div); // 最新上傳的排在最前面
+            div.innerText = `⏳ Preparing: ${file.name}...`;
+            statusList.prepend(div); // 讓新訊息出現在最上方
 
             try {
-                const base64 = await toBase64(file);
+                const base64Data = await toBase64(file);
+                
+                div.innerText = `🚀 Uploading: ${file.name}...`;
+
                 const response = await fetch(SCRIPT_URL, {
                     method: "POST",
                     body: JSON.stringify({
-                        base64: base64.split(',')[1],
+                        base64: base64Data.split(',')[1],
                         type: file.type,
                         name: file.name,
-                        uploader: guestName.value,
-                        message: guestMessage.value
+                        uploader: guestName.value.trim(),
+                        message: guestMessage.value.trim()
                     })
                 });
+
                 const result = await response.json();
                 if (result.result === "success") {
                     div.innerText = `✅ Success: ${file.name}`;
                     div.style.color = "green";
+                } else {
+                    throw new Error(result.error);
                 }
             } catch (err) {
-                div.innerText = `❌ Failed: ${file.name}`;
+                div.innerText = `❌ Error: ${file.name} (Try smaller file)`;
                 div.style.color = "red";
+                console.error(err);
             }
         }
 
         btnSelect.disabled = false;
-        btnSelect.innerText = "Continue upload";
-        fileInput.value = ""; // 重設上傳欄位
+        btnSelect.innerText = "Select and Upload";
+        fileInput.value = ""; // 清除選取紀錄，方便下次重複選取
     };
 
+    // 轉碼函式
     const toBase64 = file => new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.readAsDataURL(file);
