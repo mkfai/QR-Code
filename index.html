@@ -38,8 +38,9 @@
     </div>
 
     <div class="input-group">
-        <label for="guestMessage">Wishes / Message</label>
-        <textarea id="guestMessage" placeholder="Leave a message for us..."></textarea>
+        <label for="guestMessage">Wishes / Message (Max 100 characters)</label>
+        <textarea id="guestMessage" maxlength="100" placeholder="Leave a message for us..."></textarea>
+        <div id="char-count" style="text-align: right; font-size: 0.75rem; color: #888;">0 / 100</div>
     </div>
 
     <div class="upload-area">
